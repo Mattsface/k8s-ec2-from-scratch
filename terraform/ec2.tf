@@ -5,9 +5,44 @@
 
 # k8s controllers
 ## k8s controller 1 
-resource "aws_network_interface" "k8s-1c" {
+resource "aws_network_interface" "k8s-0c" {
   subnet_id   = aws_subnet.k8s-private-1.id
   private_ips     = ["10.0.1.10"]
+  security_groups = [aws_security_group.k8s-sg.id]
+  source_dest_check = false
+
+  tags = {
+    Name = "controller 0 nwi"
+  }
+}
+
+resource "aws_instance" "k8s-0c" {
+  ami           = "ami-04bad3c587fe60d89" # us-west-2
+  instance_type = "t2.micro"
+
+  network_interface {
+    network_interface_id = aws_network_interface.k8s-0c.id
+    device_index         = 0
+  }
+
+  ebs_block_device {
+      device_name = "/dev/sda1"
+      volume_size = 50
+      volume_type = "standard"
+  }
+
+  key_name = aws_key_pair.deployer.key_name
+  user_data = "name=controller-0"
+
+  tags = {
+    Name = "k8s controller 0"
+  }
+}
+
+## k8s controller 2 
+resource "aws_network_interface" "k8s-1c" {
+  subnet_id   = aws_subnet.k8s-private-1.id
+  private_ips     = ["10.0.1.11"]
   security_groups = [aws_security_group.k8s-sg.id]
   source_dest_check = false
 
@@ -35,14 +70,14 @@ resource "aws_instance" "k8s-1c" {
   user_data = "name=controller-1"
 
   tags = {
-    Name = "controller 1"
+    Name = "k8s controller 1"
   }
 }
 
-## k8s controller 2 
+## k8s controller 3
 resource "aws_network_interface" "k8s-2c" {
   subnet_id   = aws_subnet.k8s-private-1.id
-  private_ips     = ["10.0.1.11"]
+  private_ips     = ["10.0.1.12"]
   security_groups = [aws_security_group.k8s-sg.id]
   source_dest_check = false
 
@@ -70,28 +105,29 @@ resource "aws_instance" "k8s-2c" {
   user_data = "name=controller-2"
 
   tags = {
-    Name = "controller 2"
+    Name = "k8s controller 2"
   }
 }
 
-## k8s controller 3
-resource "aws_network_interface" "k8s-3c" {
+# k8s workers (nodes)
+## k8s worker 1 
+resource "aws_network_interface" "k8s-0w" {
   subnet_id   = aws_subnet.k8s-private-1.id
-  private_ips     = ["10.0.1.12"]
+  private_ips     = ["10.0.1.20"]
   security_groups = [aws_security_group.k8s-sg.id]
   source_dest_check = false
 
   tags = {
-    Name = "controller 3 nwi"
+    Name = "worker 0 nwi"
   }
 }
 
-resource "aws_instance" "k8s-3c" {
+resource "aws_instance" "k8s-0w" {
   ami           = "ami-04bad3c587fe60d89" # us-west-2
   instance_type = "t2.micro"
 
   network_interface {
-    network_interface_id = aws_network_interface.k8s-3c.id
+    network_interface_id = aws_network_interface.k8s-0w.id
     device_index         = 0
   }
 
@@ -102,18 +138,17 @@ resource "aws_instance" "k8s-3c" {
   }
 
   key_name = aws_key_pair.deployer.key_name
-  user_data = "name=controller-3"
-
+  user_data = "name=worker-1|pod-cidr=10.200.0.0/24"
+  
   tags = {
-    Name = "controller 3"
+    Name = "k8s worker 0"
   }
 }
 
-# k8s workers (nodes)
-## k8s worker 1 
+## k8s worker 2 
 resource "aws_network_interface" "k8s-1w" {
   subnet_id   = aws_subnet.k8s-private-1.id
-  private_ips     = ["10.0.1.20"]
+  private_ips     = ["10.0.1.21"]
   security_groups = [aws_security_group.k8s-sg.id]
   source_dest_check = false
 
@@ -139,16 +174,16 @@ resource "aws_instance" "k8s-1w" {
 
   key_name = aws_key_pair.deployer.key_name
   user_data = "name=worker-1|pod-cidr=10.200.1.0/24"
-  
+
   tags = {
     Name = "k8s worker 1"
   }
 }
 
-## k8s worker 2 
+## k8s worker 3
 resource "aws_network_interface" "k8s-2w" {
   subnet_id   = aws_subnet.k8s-private-1.id
-  private_ips     = ["10.0.1.21"]
+  private_ips     = ["10.0.1.22"]
   security_groups = [aws_security_group.k8s-sg.id]
   source_dest_check = false
 
@@ -177,40 +212,5 @@ resource "aws_instance" "k8s-2w" {
 
   tags = {
     Name = "k8s worker 2"
-  }
-}
-
-## k8s worker 3
-resource "aws_network_interface" "k8s-3w" {
-  subnet_id   = aws_subnet.k8s-private-1.id
-  private_ips     = ["10.0.1.22"]
-  security_groups = [aws_security_group.k8s-sg.id]
-  source_dest_check = false
-
-  tags = {
-    Name = "worker 3 nwi"
-  }
-}
-
-resource "aws_instance" "k8s-3w" {
-  ami           = "ami-04bad3c587fe60d89" # us-west-2
-  instance_type = "t2.micro"
-
-  network_interface {
-    network_interface_id = aws_network_interface.k8s-3w.id
-    device_index         = 0
-  }
-
-  ebs_block_device {
-      device_name = "/dev/sda1"
-      volume_size = 50
-      volume_type = "standard"
-  }
-
-  key_name = aws_key_pair.deployer.key_name
-  user_data = "name=worker-3|pod-cidr=10.200.3.0/24"
-
-  tags = {
-    Name = "k8s worker 3"
   }
 }

@@ -1,5 +1,5 @@
-﻿{
-    "CN": "system:node:ip-10-0-1-22",
+{
+    "CN": "system:node:ip-10-0-1-20",
     "key": {
       "algo": "rsa",
       "size": 2048

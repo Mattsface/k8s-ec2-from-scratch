@@ -1,5 +1,5 @@
-﻿{
-    "CN": "system:node:ip-10-0-1-20",
+{
+    "CN": "system:kube-controller-manager",
     "key": {
       "algo": "rsa",
       "size": 2048
@@ -8,9 +8,9 @@
       {
         "C": "US",
         "L": "Seattle",
-        "O": "Example Company, LLC",
+        "O": "system:kube-controller-manager",
         "OU": "Operations",
         "ST": "Washington"
-      }
+        }
     ]
 }

@@ -35,7 +35,7 @@ resource "aws_instance" "k8s-0c" {
   user_data = "name=controller-0"
 
   tags = {
-    Name = "k8s controller 0"
+    Name = "controller-0"
   }
 }
 
@@ -70,7 +70,7 @@ resource "aws_instance" "k8s-1c" {
   user_data = "name=controller-1"
 
   tags = {
-    Name = "k8s controller 1"
+    Name = "controller-1"
   }
 }
 
@@ -105,7 +105,7 @@ resource "aws_instance" "k8s-2c" {
   user_data = "name=controller-2"
 
   tags = {
-    Name = "k8s controller 2"
+    Name = "controller-2"
   }
 }
 
@@ -141,7 +141,7 @@ resource "aws_instance" "k8s-0w" {
   user_data = "name=worker-1|pod-cidr=10.200.0.0/24"
   
   tags = {
-    Name = "k8s worker 0"
+    Name = "worker-0"
   }
 }
 
@@ -176,7 +176,7 @@ resource "aws_instance" "k8s-1w" {
   user_data = "name=worker-1|pod-cidr=10.200.1.0/24"
 
   tags = {
-    Name = "k8s worker 1"
+    Name = "worker-1"
   }
 }
 
@@ -211,6 +211,6 @@ resource "aws_instance" "k8s-2w" {
   user_data = "name=worker-2|pod-cidr=10.200.2.0/24"
 
   tags = {
-    Name = "k8s worker 2"
+    Name = "worker-2"
   }
 }

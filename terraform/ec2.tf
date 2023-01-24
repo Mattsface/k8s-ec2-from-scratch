@@ -7,7 +7,9 @@
 ## k8s controller 1 
 resource "aws_network_interface" "k8s-1c" {
   subnet_id   = aws_subnet.k8s-private-1.id
+  private_ips     = ["10.0.1.10"]
   security_groups = [aws_security_group.k8s-sg.id]
+  source_dest_check = false
 
   tags = {
     Name = "controller 1 nwi"
@@ -23,7 +25,14 @@ resource "aws_instance" "k8s-1c" {
     device_index         = 0
   }
 
+  ebs_block_device {
+      device_name = "/dev/sda1"
+      volume_size = 50
+      volume_type = "standard"
+  }
+
   key_name = aws_key_pair.deployer.key_name
+  user_data = "name=controller-1"
 
   tags = {
     Name = "controller 1"
@@ -33,7 +42,9 @@ resource "aws_instance" "k8s-1c" {
 ## k8s controller 2 
 resource "aws_network_interface" "k8s-2c" {
   subnet_id   = aws_subnet.k8s-private-1.id
+  private_ips     = ["10.0.1.11"]
   security_groups = [aws_security_group.k8s-sg.id]
+  source_dest_check = false
 
   tags = {
     Name = "controller 2 nwi"
@@ -49,7 +60,14 @@ resource "aws_instance" "k8s-2c" {
     device_index         = 0
   }
 
+  ebs_block_device {
+      device_name = "/dev/sda1"
+      volume_size = 50
+      volume_type = "standard"
+  }
+
   key_name = aws_key_pair.deployer.key_name
+  user_data = "name=controller-2"
 
   tags = {
     Name = "controller 2"
@@ -59,7 +77,9 @@ resource "aws_instance" "k8s-2c" {
 ## k8s controller 3
 resource "aws_network_interface" "k8s-3c" {
   subnet_id   = aws_subnet.k8s-private-1.id
+  private_ips     = ["10.0.1.12"]
   security_groups = [aws_security_group.k8s-sg.id]
+  source_dest_check = false
 
   tags = {
     Name = "controller 3 nwi"
@@ -75,9 +95,122 @@ resource "aws_instance" "k8s-3c" {
     device_index         = 0
   }
 
+  ebs_block_device {
+      device_name = "/dev/sda1"
+      volume_size = 50
+      volume_type = "standard"
+  }
+
   key_name = aws_key_pair.deployer.key_name
+  user_data = "name=controller-3"
 
   tags = {
     Name = "controller 3"
+  }
+}
+
+# k8s workers (nodes)
+## k8s worker 1 
+resource "aws_network_interface" "k8s-1w" {
+  subnet_id   = aws_subnet.k8s-private-1.id
+  private_ips     = ["10.0.1.20"]
+  security_groups = [aws_security_group.k8s-sg.id]
+  source_dest_check = false
+
+  tags = {
+    Name = "worker 1 nwi"
+  }
+}
+
+resource "aws_instance" "k8s-1w" {
+  ami           = "ami-04bad3c587fe60d89" # us-west-2
+  instance_type = "t2.micro"
+
+  network_interface {
+    network_interface_id = aws_network_interface.k8s-1w.id
+    device_index         = 0
+  }
+
+  ebs_block_device {
+      device_name = "/dev/sda1"
+      volume_size = 50
+      volume_type = "standard"
+  }
+
+  key_name = aws_key_pair.deployer.key_name
+  user_data = "name=worker-1|pod-cidr=10.200.1.0/24"
+  
+  tags = {
+    Name = "k8s worker 1"
+  }
+}
+
+## k8s worker 2 
+resource "aws_network_interface" "k8s-2w" {
+  subnet_id   = aws_subnet.k8s-private-1.id
+  private_ips     = ["10.0.1.21"]
+  security_groups = [aws_security_group.k8s-sg.id]
+  source_dest_check = false
+
+  tags = {
+    Name = "worker 2 nwi"
+  }
+}
+
+resource "aws_instance" "k8s-2w" {
+  ami           = "ami-04bad3c587fe60d89" # us-west-2
+  instance_type = "t2.micro"
+
+  network_interface {
+    network_interface_id = aws_network_interface.k8s-2w.id
+    device_index         = 0
+  }
+
+  ebs_block_device {
+      device_name = "/dev/sda1"
+      volume_size = 50
+      volume_type = "standard"
+  }
+
+  key_name = aws_key_pair.deployer.key_name
+  user_data = "name=worker-2|pod-cidr=10.200.2.0/24"
+
+  tags = {
+    Name = "k8s worker 2"
+  }
+}
+
+## k8s worker 3
+resource "aws_network_interface" "k8s-3w" {
+  subnet_id   = aws_subnet.k8s-private-1.id
+  private_ips     = ["10.0.1.22"]
+  security_groups = [aws_security_group.k8s-sg.id]
+  source_dest_check = false
+
+  tags = {
+    Name = "worker 3 nwi"
+  }
+}
+
+resource "aws_instance" "k8s-3w" {
+  ami           = "ami-04bad3c587fe60d89" # us-west-2
+  instance_type = "t2.micro"
+
+  network_interface {
+    network_interface_id = aws_network_interface.k8s-3w.id
+    device_index         = 0
+  }
+
+  ebs_block_device {
+      device_name = "/dev/sda1"
+      volume_size = 50
+      volume_type = "standard"
+  }
+
+  key_name = aws_key_pair.deployer.key_name
+  user_data = "name=worker-3|pod-cidr=10.200.3.0/24"
+
+  tags = {
+    Name = "k8s worker 3"
   }
 }

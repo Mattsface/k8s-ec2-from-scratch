@@ -15,6 +15,8 @@ resource "aws_subnet" "k8s-private-1" {
   vpc_id     = aws_vpc.k8s-vpc-main.id
   cidr_block = "10.0.1.0/24"
   availability_zone = "us-west-2a" # change to a var
+  map_public_ip_on_launch = true
+
   tags = {
     Name = "k8s-private-1"
   }
@@ -159,7 +161,7 @@ resource "aws_lb_target_group_attachment" "k8s-c3" {
   port             = 6443
 }
 
-# Create a Listener 
+# k8s nlb listener
 resource "aws_alb_listener" "k8s-nlb-listener" {
   default_action {
     target_group_arn = "${aws_lb_target_group.k8s-tg.arn}"

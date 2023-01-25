@@ -15,3 +15,9 @@ terraform plan
 terraform apply
 ```
 
+### Provision certs
+```
+cd certs
+./make_certs.sh
+./send_certs.sh
+```

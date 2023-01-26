@@ -34,5 +34,5 @@ cd configs
 ### Encryption 
 ```
 cd encryption
-./make_encryption
+./make_encryption.sh
 ```

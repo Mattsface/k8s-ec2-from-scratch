@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # TODO Add a y/n prompt 
-
-
 CERTS_DIR="certs"
 CONFIGS_DIR="configs"
+ENCRYPTION_DIR="encryption"
+
 
 # Certs
 if [ -d "${CERTS_DIR}/admin-keys" ]; then
@@ -45,6 +45,10 @@ if [ -d "${CONFIGS_DIR}/kube-scheduler" ]; then
 fi
 
 if [ -d "${CONFIGS_DIR}/admin" ]; then
-    rm -rf "${CONFIGS_DIR}/admin"
+    rm -r "${CONFIGS_DIR}/admin"
 fi
 
+# Encrpytion
+if [ -f "${ENCRYPTION_DIR}/encryption-config.yaml" ]; then
+    rm "${ENCRYPTION_DIR}/encryption-config.yaml"
+fi

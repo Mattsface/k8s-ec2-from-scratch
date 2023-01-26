@@ -17,5 +17,5 @@ done
 
 for INSTANCE in controller-0 controller-1 controller-2; do
     CONTROLLER_EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
-    scp "${CA_KEYS_DIR}/ca.pem" "${CA_KEYS_DIR}/ca-key.pem" "${KUBE_KEYS_DIR}/kubernetes-key.pem" "${KUBE_KEYS_DIR}/kubernetes.pem" "${SERVICE_ACCOUNT_DIR}/service-account-key.pem" ubuntu@${CONTROLLER_EXTERNAL_IP}:~/
+    scp "${CA_KEYS_DIR}/ca.pem" "${CA_KEYS_DIR}/ca-key.pem" "${KUBE_KEYS_DIR}/kubernetes-key.pem" "${KUBE_KEYS_DIR}/kubernetes.pem" "${SERVICE_ACCOUNT_DIR}/service-account-key.pem" "${SERVICE_ACCOUNT_DIR}/service-account.pem" ubuntu@${CONTROLLER_EXTERNAL_IP}:~/
 done

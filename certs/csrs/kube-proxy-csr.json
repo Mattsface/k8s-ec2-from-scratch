@@ -9,7 +9,7 @@
         "C": "US",
         "L": "Seattle",
         "O": "system:node-proxier",
-        "OU": "Operations",
+        "OU": "Kubernetes from scratch",
         "ST": "Washington"
       }
     ]

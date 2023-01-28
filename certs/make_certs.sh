@@ -53,7 +53,7 @@ if [ -f "${CA_CSR}" ]; then
 fi
 
 if [ -f "${ADMIN_CSR}" ] && [ -f "${CA_CONFIG}" ]; then
-    cfssl gencert -ca="${CA_KEYS_DIR}/ca.pem" -ca-key="${CA_KEYS_DIR}/ca-key.pem" -config="${CA_CONFIG}" -profile=kubernetes "${ADMIN_CSR}" | cfssljson -bare "${ADMIN_KEYS_DIR}/admin"
+    cfssl gencert -ca="${CA_KEYS_DIR}/ca.pem" -ca-key="${CA_KEYS_DIR}/ca-key.pem" -config="${CA_CONFIG}" -profile="kubernetes" "${ADMIN_CSR}" | cfssljson -bare "${ADMIN_KEYS_DIR}/admin"
 fi
 
 for i in 0 1 2; do

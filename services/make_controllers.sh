@@ -20,6 +20,7 @@ done
 for INSTANCE in controller-0 controller-1 controller-2; do
     EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
     echo ""
+    sleep 2
     ssh ubuntu@$EXTERNAL_IP "sudo ETCDCTL_API=3 etcdctl member list --endpoints=https://127.0.0.1:2379 --cacert=/etc/etcd/ca.pem --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem"
     echo ""
 done
@@ -34,10 +35,20 @@ done
 
 for INSTANCE in controller-0 controller-1 controller-2; do
     EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
+    echo "${INSTANCE} kube-apiserver kube-controller-manager kube-scheduler status"
+    echo "------------------------------------------------------------------------"
+    sleep 5
     ssh ubuntu@$EXTERNAL_IP "sudo systemctl status kube-apiserver"
     ssh ubuntu@$EXTERNAL_IP "sudo systemctl status kube-controller-manager"
     ssh ubuntu@$EXTERNAL_IP "sudo systemctl status kube-scheduler"
     ssh ubuntu@$EXTERNAL_IP "kubectl cluster-info --kubeconfig admin.kubeconfig"
 done
 
-
+sleep 5
+for INSTANCE in controller-0 controller-1 controller-2; do
+    EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
+    scp "scripts/configure_rbac.sh" ubuntu@${EXTERNAL_IP}:~/
+    ssh ubuntu@$EXTERNAL_IP "~/configure_rbac.sh"
+done
+sleep 10
+curl --cacert ../certs/ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}/version

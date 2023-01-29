@@ -79,11 +79,17 @@ kubectl config use-context "default" --kubeconfig="${ADMIN_DIR}/admin.kubeconfig
 # scp configs to worker and controller nodes
 for INSTANCE in worker-0 worker-1 worker-2; do
     EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
-    scp "${ADMIN_DIR}/admin.kubeconfig" "${WORKERS_CONFIG_DIR}/${INSTANCE}.kubeconfig" "${KUBE_PROXY_DIR}/kube-proxy.kubeconfig" ubuntu@${EXTERNAL_IP}:~/
+    if ! scp "${ADMIN_DIR}/admin.kubeconfig" "${WORKERS_CONFIG_DIR}/${INSTANCE}.kubeconfig" "${KUBE_PROXY_DIR}/kube-proxy.kubeconfig" ubuntu@${EXTERNAL_IP}:~/; then
+        echo "Failed to scp configs to ${INSTANCE}"
+        exit 1
+    fi
 done
 
 for INSTANCE in controller-0 controller-1 controller-2; do
     EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
-    scp "${ADMIN_DIR}/admin.kubeconfig" "${KUBE_CONTROLLER_DIR}/kube-controller-manager.kubeconfig" "${KUBE_SCHEDULE_DIR}/kube-scheduler.kubeconfig" ubuntu@${EXTERNAL_IP}:~/
+    if ! scp "${ADMIN_DIR}/admin.kubeconfig" "${KUBE_CONTROLLER_DIR}/kube-controller-manager.kubeconfig" "${KUBE_SCHEDULE_DIR}/kube-scheduler.kubeconfig" ubuntu@${EXTERNAL_IP}:~/; then
+        echo "Failed to scp configs to ${INSTANCE}"
+        exit 1
+    fi
 done
 

@@ -6,11 +6,17 @@ for INSTANCE in controller-0 controller-1 controller-2; do
     EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
 
     # install etc from tar
-    scp "scripts/install_etcd.sh" ubuntu@${EXTERNAL_IP}:~/
+    if ! scp "scripts/install_etcd.sh" ubuntu@${EXTERNAL_IP}:~/; then
+        echo "failed to scp install_etcd.sh to ${INSTANCE}"
+        exit 1
+    fi
     ssh ubuntu@$EXTERNAL_IP "~/install_etcd.sh"
 
     # configure etcd
-    scp "scripts/configure_etcd.sh" ubuntu@${EXTERNAL_IP}:~/
+    if ! scp "scripts/configure_etcd.sh" ubuntu@${EXTERNAL_IP}:~/; then
+        echo "failed to scp configured_etcd.sh to ${INSTANCE}"
+        exit 1
+    fi
     ssh ubuntu@$EXTERNAL_IP "~/configure_etcd.sh"
 
     
@@ -29,7 +35,10 @@ KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers --load-balancer-ar
 
 for INSTANCE in controller-0 controller-1 controller-2; do
     EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
-    scp "scripts/kubernetes_control.sh" ubuntu@${EXTERNAL_IP}:~/
+    if ! scp "scripts/kubernetes_control.sh" ubuntu@${EXTERNAL_IP}:~/; then
+        echo "failed to scp kubernetes_control.sh to ${INSTANCE}"
+        exit 1
+    fi
     ssh ubuntu@$EXTERNAL_IP "~/kubernetes_control.sh ${KUBERNETES_PUBLIC_ADDRESS}"
 done
 
@@ -47,8 +56,11 @@ done
 sleep 5
 for INSTANCE in controller-0 controller-1 controller-2; do
     EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
-    scp "scripts/configure_rbac.sh" ubuntu@${EXTERNAL_IP}:~/
+    if ! scp "scripts/configure_rbac.sh" ubuntu@${EXTERNAL_IP}:~/; then
+        echo "failed to scp configure_rbac.sh to ${INSTANCE}"
+        exit 1
+    fi
     ssh ubuntu@$EXTERNAL_IP "~/configure_rbac.sh"
 done
 sleep 10
-curl --cacert ../certs/ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}/version
+curl -k --cacert ../certs/ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}/version

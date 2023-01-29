@@ -138,7 +138,7 @@ resource "aws_instance" "k8s-0w" {
   }
 
   key_name = aws_key_pair.deployer.key_name
-  user_data = "name=worker-1|pod-cidr=10.200.0.0/24"
+  user_data = "name=worker-0|pod-cidr=10.200.0.0/24"
   
   tags = {
     Name = "worker-0"

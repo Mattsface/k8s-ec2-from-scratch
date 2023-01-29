@@ -20,6 +20,9 @@ EOF
 
 # send encrpytion-config to controllers
 for INSTANCE in controller-0 controller-1 controller-2; do
-  EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
-  scp encryption-config.yaml ubuntu@${EXTERNAL_IP}:~/
+    EXTERNAL_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${INSTANCE}" "Name=instance-state-name,Values=running" --output text --query 'Reservations[].Instances[].PublicIpAddress')
+    if ! scp encryption-config.yaml ubuntu@${EXTERNAL_IP}:~/; then
+      echo "Failed to scp encryption-config to ${INSTANCE}"
+      exit 1 
+    fi
 done

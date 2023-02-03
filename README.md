@@ -43,6 +43,11 @@ cd nodes
 ./make_workers.sh
 ```
 
+### Setup Kubernetes context
+```
+./set_context.sh
+```
+
 ### Setup network for pods and services
 ```
 cd network

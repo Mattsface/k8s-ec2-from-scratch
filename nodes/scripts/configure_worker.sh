@@ -1,23 +1,23 @@
 #!/bin/bash
-
+set -x
 
 # install socat conntrack ipset
-sudo apt-get update
-sudo apt-get -y install socat conntrack ipset
+sudo apt-get update > /dev/null
+sudo apt-get -y install socat conntrack ipset > /dev/null
 
 # no idea what this does
 sudo swapon --show
 sudo swapoff -a
 
 # download kubernetes
-wget -q --show-progress --https-only --timestamping \
+wget -q --https-only --timestamping \
   https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.21.0/crictl-v1.21.0-linux-amd64.tar.gz \
   https://github.com/opencontainers/runc/releases/download/v1.0.0-rc93/runc.amd64 \
   https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz \
   https://github.com/containerd/containerd/releases/download/v1.4.4/containerd-1.4.4-linux-amd64.tar.gz \
   https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl \
   https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-proxy \
-  https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubelet
+  https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubelet > /dev/null
 
 # make dirs
 sudo mkdir -p \
@@ -30,9 +30,9 @@ sudo mkdir -p \
 
 # install
 mkdir containerd
-tar -xvf crictl-v1.21.0-linux-amd64.tar.gz
-tar -xvf containerd-1.4.4-linux-amd64.tar.gz -C containerd
-sudo tar -xvf cni-plugins-linux-amd64-v0.9.1.tgz -C /opt/cni/bin/
+tar -xvf crictl-v1.21.0-linux-amd64.tar.gz > /dev/null
+tar -xvf containerd-1.4.4-linux-amd64.tar.gz -C containerd > /dev/null
+sudo tar -xvf cni-plugins-linux-amd64-v0.9.1.tgz -C /opt/cni/bin/ > /dev/null
 sudo mv runc.amd64 runc
 chmod +x crictl kubectl kube-proxy kubelet runc 
 sudo mv crictl kubectl kube-proxy kubelet runc /usr/local/bin/
@@ -40,8 +40,7 @@ sudo mv containerd/bin/* /bin/
 
 POD_CIDR=$(curl -s http://169.254.169.254/latest/user-data/ \
   | tr "|" "\n" | grep "^pod-cidr" | cut -d"=" -f2)
-echo "${POD_CIDR}"
-sleep 5
+
 
 cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
 {
@@ -68,6 +67,7 @@ cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
     "type": "loopback"
 }
 EOF
+
 sleep 5
 echo "Make Containerd"
 echo "---------------"
@@ -105,8 +105,6 @@ EOF
 
 WORKER_NAME=$(curl -s http://169.254.169.254/latest/user-data/ \
 | tr "|" "\n" | grep "^name" | cut -d"=" -f2)
-echo "${WORKER_NAME}"
-echo "--------------"
 sleep 5
 
 sudo cp ${WORKER_NAME}-key.pem ${WORKER_NAME}.pem /var/lib/kubelet/
@@ -184,3 +182,4 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable containerd kubelet kube-proxy
 sudo systemctl start containerd kubelet kube-proxy
+sudo systemctl status containerd kubelet kube-proxy

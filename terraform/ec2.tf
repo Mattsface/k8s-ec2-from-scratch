@@ -18,7 +18,7 @@ resource "aws_network_interface" "k8s-0c" {
 
 resource "aws_instance" "k8s-0c" {
   ami           = "ami-04bad3c587fe60d89" # us-west-2
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
 
   network_interface {
     network_interface_id = aws_network_interface.k8s-0c.id
@@ -27,7 +27,7 @@ resource "aws_instance" "k8s-0c" {
 
   ebs_block_device {
       device_name = "/dev/sda1"
-      volume_size = 50
+      volume_size = 100
       volume_type = "standard"
   }
 
@@ -53,7 +53,7 @@ resource "aws_network_interface" "k8s-1c" {
 
 resource "aws_instance" "k8s-1c" {
   ami           = "ami-04bad3c587fe60d89" # us-west-2
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
 
   network_interface {
     network_interface_id = aws_network_interface.k8s-1c.id
@@ -62,7 +62,7 @@ resource "aws_instance" "k8s-1c" {
 
   ebs_block_device {
       device_name = "/dev/sda1"
-      volume_size = 50
+      volume_size = 100
       volume_type = "standard"
   }
 
@@ -88,7 +88,7 @@ resource "aws_network_interface" "k8s-2c" {
 
 resource "aws_instance" "k8s-2c" {
   ami           = "ami-04bad3c587fe60d89" # us-west-2
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
 
   network_interface {
     network_interface_id = aws_network_interface.k8s-2c.id
@@ -97,7 +97,7 @@ resource "aws_instance" "k8s-2c" {
 
   ebs_block_device {
       device_name = "/dev/sda1"
-      volume_size = 50
+      volume_size = 100
       volume_type = "standard"
   }
 
@@ -124,7 +124,7 @@ resource "aws_network_interface" "k8s-0w" {
 
 resource "aws_instance" "k8s-0w" {
   ami           = "ami-04bad3c587fe60d89" # us-west-2
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
 
   network_interface {
     network_interface_id = aws_network_interface.k8s-0w.id
@@ -133,7 +133,7 @@ resource "aws_instance" "k8s-0w" {
 
   ebs_block_device {
       device_name = "/dev/sda1"
-      volume_size = 50
+      volume_size = 100
       volume_type = "standard"
   }
 
@@ -159,7 +159,7 @@ resource "aws_network_interface" "k8s-1w" {
 
 resource "aws_instance" "k8s-1w" {
   ami           = "ami-04bad3c587fe60d89" # us-west-2
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
 
   network_interface {
     network_interface_id = aws_network_interface.k8s-1w.id
@@ -168,7 +168,7 @@ resource "aws_instance" "k8s-1w" {
 
   ebs_block_device {
       device_name = "/dev/sda1"
-      volume_size = 50
+      volume_size = 100
       volume_type = "standard"
   }
 
@@ -194,7 +194,7 @@ resource "aws_network_interface" "k8s-2w" {
 
 resource "aws_instance" "k8s-2w" {
   ami           = "ami-04bad3c587fe60d89" # us-west-2
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
 
   network_interface {
     network_interface_id = aws_network_interface.k8s-2w.id
@@ -203,7 +203,7 @@ resource "aws_instance" "k8s-2w" {
 
   ebs_block_device {
       device_name = "/dev/sda1"
-      volume_size = 50
+      volume_size = 100
       volume_type = "standard"
   }
 

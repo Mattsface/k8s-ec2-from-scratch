@@ -22,7 +22,6 @@ terraform apply
 ```
 cd certs
 ./make_certs.sh
-./send_certs.sh
 ```
 
 ### Provision configs
@@ -35,4 +34,17 @@ cd configs
 ```
 cd encryption
 ./make_encryption.sh
+```
+
+### Build workers and controllers
+```
+cd nodes
+./make_controllers.sh
+./make_workers.sh
+```
+
+### Setup network for pods and services
+```
+cd network
+./setup_network.sh
 ```

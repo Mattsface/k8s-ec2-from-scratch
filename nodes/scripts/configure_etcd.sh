@@ -1,13 +1,19 @@
 #!/bin/bash
 
-# WIP
+echo "Downloading etcd-v3.4.15"
+wget -q --timestamping "https://github.com/etcd-io/etcd/releases/download/v3.4.15/etcd-v3.4.15-linux-amd64.tar.gz" > /dev/null
+echo "Extracting etcd-v3.4.15"
+tar -xvf etcd-v3.4.15-linux-amd64.tar.gz > /dev/null
+echo "Moving etcd-v3.4.15 to /usr/local/bin"
+sudo mv etcd-v3.4.15-linux-amd64/etcd* /usr/local/bin/
 echo "create etc configuration"
+
+
 sudo mkdir -p /etc/etcd /var/lib/etcd
 sudo chmod 700 /var/lib/etcd
 sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/etcd/
 INTERNAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 ETCD_NAME=$(curl -s http://169.254.169.254/latest/user-data/ | tr "|" "\n" | grep "^name" | cut -d"=" -f2)
-echo "${ETCD_NAME}"
 
 # create systemd etcd service file
 echo "create systemd etcd service file"
@@ -37,6 +43,7 @@ ExecStart=/usr/local/bin/etcd \\
   --data-dir=/var/lib/etcd
 Restart=on-failure
 RestartSec=5
+TimeoutSec=120
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -45,5 +52,4 @@ EOF
 echo "Start etcd service"
 sudo systemctl daemon-reload
 sudo systemctl enable etcd
-sudo systemctl start etcd
-sudo systemctl status etcd
+sudo systemctl --no-block start etcd

@@ -1,7 +1,6 @@
 #!/bin/bash
-
 KUBERNETES_PUBLIC_ADDRESS=$1
-echo ${KUBERNETES_PUBLIC_ADDRESS}
+
 
 # Make directories
 sudo mkdir -p /etc/kubernetes/config
@@ -12,11 +11,12 @@ sudo cp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.
 
 
 # get components 
-wget -q --show-progress --https-only --timestamping \
+echo "Downloading kube controller binarys"
+wget -q --https-only --timestamping \
   "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-apiserver" \
   "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-controller-manager" \
   "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-scheduler" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl"
+  "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl" > /dev/null
 
 # set executure permissions
 chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl
@@ -124,9 +124,58 @@ sudo systemctl daemon-reload
 sudo systemctl enable kube-apiserver kube-controller-manager kube-scheduler
 sudo systemctl start kube-apiserver kube-controller-manager kube-scheduler
 
+
+while ! sudo systemctl status kube-apiserver kube-controller-manager kube-scheduler; do
+    echo "Waiting for kube-apiserver, kube-controller-manager, kube-scheduler to start"
+    sleep 5
+done
+
+# set up hosts file 
 cat <<EOF | sudo tee -a /etc/hosts
 10.0.1.20 ip-10-0-1-20
 10.0.1.21 ip-10-0-1-21
 10.0.1.22 ip-10-0-1-22
 EOF
 
+while ! nc -z 127.0.0.1 6443 ; do 
+    sleep 5
+    echo "Waiting for kube-controller-manager to listen on port 6443"
+done
+
+cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:kube-apiserver-to-kubelet
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/proxy
+      - nodes/stats
+      - nodes/log
+      - nodes/spec
+      - nodes/metrics
+    verbs:
+      - "*"
+EOF
+
+cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:kube-apiserver
+  namespace: ""
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-apiserver-to-kubelet
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: kubernetes
+EOF

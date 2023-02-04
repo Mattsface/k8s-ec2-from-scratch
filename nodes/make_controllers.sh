@@ -3,7 +3,7 @@
 # WIP ssh etcd build commands to control nodes
 
 SSH_OPTIONS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers --load-balancer-arns ${LOAD_BALANCER_ARN} --output text --query 'LoadBalancers[].DNSName')
+KUBERNETES_PUBLIC_ADDRESS=$(aws elbv2 describe-load-balancers --names k8s-nlb --output text --query 'LoadBalancers[].DNSName')
 
 
 for INSTANCE in controller-0 controller-1 controller-2; do

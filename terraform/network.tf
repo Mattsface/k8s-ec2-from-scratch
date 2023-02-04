@@ -178,9 +178,18 @@ resource "aws_lb_target_group" "k8s-tg" {
 }
 
 # k8s-nginx-ingress target group
-resource "aws_lb_target_group" "k8s-nginx-ingress-tg" {
-  name     = "k8s-nginx-ingress-tg"
+resource "aws_lb_target_group" "k8s-nginx-ingress-tg-http" {
+  name     = "k8s-nginx-ingress-tg-http"
   port     = 30080
+  protocol = "TCP"
+  target_type = "ip"
+  vpc_id   = aws_vpc.k8s-vpc-main.id
+}
+
+# k8s-nginx-ingress target group
+resource "aws_lb_target_group" "k8s-nginx-ingress-tg-https" {
+  name     = "k8s-nginx-ingress-tg-https"
+  port     = 30081
   protocol = "TCP"
   target_type = "ip"
   vpc_id   = aws_vpc.k8s-vpc-main.id
@@ -206,30 +215,61 @@ resource "aws_lb_target_group_attachment" "k8s-c3" {
   port             = 6443
 }
 
-# k8s-nginx-ingress targets
+# k8s-nginx-ingress-http targets
 ## k8s worker 0
-resource "aws_lb_target_group_attachment" "k8s-nginx-w0" {
-  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg.arn
+resource "aws_lb_target_group_attachment" "k8s-nginx-w0-http" {
+  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg-http.arn
   target_id        = "10.0.1.20"
   port             = 30080
 }
 ## k8s worker 1
-resource "aws_lb_target_group_attachment" "k8s-nginx-w1" {
-  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg.arn
+resource "aws_lb_target_group_attachment" "k8s-nginx-w1-http" {
+  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg-http.arn
   target_id        = "10.0.1.21"
   port             = 30080
 }
 ## k8s worker 2
-resource "aws_lb_target_group_attachment" "k8s-nginx-w2" {
-  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg.arn
+resource "aws_lb_target_group_attachment" "k8s-nginx-w2-http" {
+  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg-http.arn
   target_id        = "10.0.1.22"
   port             = 30080
 }
 
-# k8s nlb listener
-resource "aws_alb_listener" "k8s-nginx-listener" {
+# k8s-nginx-ingress-https targets
+## k8s worker 0
+resource "aws_lb_target_group_attachment" "k8s-nginx-w0-https" {
+  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg-https.arn
+  target_id        = "10.0.1.20"
+  port             = 30081
+}
+## k8s worker 1
+resource "aws_lb_target_group_attachment" "k8s-nginx-w1-https" {
+  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg-https.arn
+  target_id        = "10.0.1.21"
+  port             = 30081
+}
+## k8s worker 2
+resource "aws_lb_target_group_attachment" "k8s-nginx-w2-https" {
+  target_group_arn = aws_lb_target_group.k8s-nginx-ingress-tg-https.arn
+  target_id        = "10.0.1.22"
+  port             = 30081
+}
+
+# k8s nginx http listener
+resource "aws_alb_listener" "k8s-nginx-listener-http" {
   default_action {
-    target_group_arn = "${aws_lb_target_group.k8s-nginx-ingress-tg.arn}"
+    target_group_arn = "${aws_lb_target_group.k8s-nginx-ingress-tg-http.arn}"
+    type = "forward"
+  }
+  load_balancer_arn = "${aws_lb.k8s-nginx-ingress.arn}"
+  port = 80
+  protocol = "TCP"
+}
+
+# k8s nginx https listener
+resource "aws_alb_listener" "k8s-nginx-listener-https" {
+  default_action {
+    target_group_arn = "${aws_lb_target_group.k8s-nginx-ingress-tg-https.arn}"
     type = "forward"
   }
   load_balancer_arn = "${aws_lb.k8s-nginx-ingress.arn}"

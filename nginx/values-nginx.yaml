@@ -1,0 +1,25 @@
+controller:
+  kind: deployment
+  logLevel: 4 
+  replicaCount: 3
+
+  config:
+    name: "deployment-development"
+
+  ingressClass: nginx
+
+  service:
+    httpPort:
+      enable: true
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+    httpsPort:
+      enable: true
+      port: 443
+      targetPort: 443
+      nodePort: 30081
+
+    type: NodePort
+
+    ## The list of external IPs for the Ingress Controller service.

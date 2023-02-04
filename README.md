@@ -26,19 +26,19 @@ cd certs
 
 ### Provision configs
 ```
-cd configs
+cd scratch/configs
 ./make_configs.sh
 ```
 
 ### Encryption 
 ```
-cd encryption
+cd scratch/encryption
 ./make_encryption.sh
 ```
 
 ### Build workers and controllers
 ```
-cd nodes
+cd scratch/nodes
 ./make_controllers.sh
 ./make_workers.sh
 ```
@@ -50,6 +50,6 @@ cd nodes
 
 ### Setup network for pods and services
 ```
-cd network
-./setup_network.sh
+cd scratch/dns
+.setup_network.sh
 ```

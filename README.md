@@ -4,7 +4,7 @@ Build a AWS K8s cluster from free tier EC2
 // TODO add comments, style, AWS configs
 
 
-
+### Deploy with BASH/SSH scripts
 ### Clone project
 ```
 git clone https://github.com/Mattsface/k8s-ec2-from-scratch.git
@@ -52,4 +52,15 @@ cd scratch/nodes
 ```
 cd scratch/dns
 .setup_network.sh
+```
+
+### Deploy with ansible
+### Build inventory
+```
+cd ansible
+python3 build_inventory.py
+```
+### ping hosts with ansible and accept SSH keys
+```
+ansible -i inventory --user ubuntu all -m ping
 ```

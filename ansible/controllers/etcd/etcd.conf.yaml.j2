@@ -1,4 +1,10 @@
 data-dir: /var/lib/etcd/{{ hostvars[inventory_hostname]['ansible_facts']['hostname'] }}.etcd
+cert-file: /etc/etcd/ssl/kubernetes.pem
+key-file: /etc/etcd/ssl/kubernetes-key.pem
+peer-cert-file: /etc/etcd/ssl/kubernetes.pem
+peer-key-file: /etc/etcd/ssl/kubernetes-key.pem
+trusted-ca-file: /etc/etcd/ssl/ca.pem
+peer-trusted-ca-file: /etc/etcd/ssl/ca.pem
 name: {{ hostvars[inventory_hostname]['ansible_facts']['hostname'] }}
 initial-advertise-peer-urls: http://{{ hostvars[inventory_hostname]['ansible_facts']['ens5']['ipv4']['address'] }}:2380
 listen-peer-urls: http://{{ hostvars[inventory_hostname]['ansible_facts']['ens5']['ipv4']['address'] }}:2380,http://127.0.0.1:2380
@@ -6,4 +12,3 @@ advertise-client-urls: http://{{ hostvars[inventory_hostname]['ansible_facts']['
 listen-client-urls: http://{{ hostvars[inventory_hostname]['ansible_facts']['ens5']['ipv4']['address'] }}:2379,http://127.0.0.1:2379
 initial-cluster-state: new
 initial-cluster: {% for host in groups['controllers'] %}{{ hostvars[host]['ansible_facts']['hostname'] }}=http://{{ hostvars[host]['ansible_facts']['ens5']['ipv4']['address'] }}:2380{% if not loop.last %},{% endif %}{% endfor %}
-

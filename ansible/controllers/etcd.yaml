@@ -1,18 +1,4 @@
 ---
-- name: Creating certificates for etcd
-  hosts: localhost
-  gather_facts: False
-  become: False
-  tasks:
-    - name: "Generate private key for each member"
-      openssl_privatekey:
-        path: certs/etcd/{{item}}.key
-        type: RSA
-        size: 4096
-        state: present
-        force: True
-      with_items: "{{ groups['controllers'] }}"
-
 - name: Install and Configure etcd
   hosts: controllers
   remote_user: ubuntu
@@ -103,11 +89,38 @@
         - directory
     - name: "Create directory for etcd configuration"
       file:
-        path: /etc/etcd
+        path: "{{ item }}"
         state: directory
         owner: root
         group: root
         mode: 0755
+      with_items:
+        - /etc/etcd
+        - /etc/etcd/ssl
+    - name: "Copy over the CA certificate"
+      copy:
+        src: '{{ inventory_dir }}/certs/ca-keys/ca.pem'
+        remote_src: False
+        dest: /etc/etcd/ssl/ca.pem
+        owner: root
+        group: root
+        mode: 0644
+    - name: "Copy over the `etcd` member certificate"
+      copy:
+        src: '{{ inventory_dir }}/certs/kube-keys/kubernetes.pem'
+        remote_src: False
+        dest: /etc/etcd/ssl/kubernetes.pem
+        owner: root
+        group: root
+        mode: 0644
+    - name: "Copy over the `etcd` member key"
+      copy:
+        src: '{{ inventory_dir }}/certs/kube-keys/kubernetes-key.pem'
+        remote_src: False
+        dest: /etc/etcd/ssl/kubernetes-key.pem
+        owner: root
+        group: root
+        mode: 0600
     - name: "Create configuration file for etcd"
       template:
         src: etcd/etcd.conf.yaml.j2

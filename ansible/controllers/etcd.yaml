@@ -1,4 +1,18 @@
 ---
+- name: Creating certificates for etcd
+  hosts: localhost
+  gather_facts: False
+  become: False
+  tasks:
+    - name: "Generate private key for each member"
+      openssl_privatekey:
+        path: certs/etcd/{{item}}.key
+        type: RSA
+        size: 4096
+        state: present
+        force: True
+      with_items: "{{ groups['controllers'] }}"
+
 - name: Install and Configure etcd
   hosts: controllers
   remote_user: ubuntu

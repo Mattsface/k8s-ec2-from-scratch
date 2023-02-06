@@ -1,2 +1,17 @@
 ---
 # vars file for controller
+etcd_bin: /opt/etcd/bin
+etcd_ssl: /etc/etcd/ssl
+certs:
+  etcd_cert: "{{ inventory_dir }}/certs/kube-keys/kubernetes.pem"
+  etcd_key: "{{ inventory_dir }}/certs/kube-keys/kubernetes-key.pem"
+  ca_cert: "{{ inventory_dir }}/certs/ca-keys/ca.pem"
+  ca_key: "{{ inventory_dir }}/certs/ca-keys/ca-key.pem"
+  service_account_cert: "{{ inventory_dir }}/certs/service-account.pem"
+  service_account_key: "{{ inventory_dir }}/certs/service-account-key.pem"
+  kube_controller_manager_cert: "{{ inventory_dir }}/certs/kube-controller-manager.pem"
+  kube_controller_manager_key: "{{ inventory_dir }}/certs/kube-controller-manager-key.pem"
+  kube_proxy_cert: "{{ inventory_dir }}/certs/kube-proxy.pem"
+  kube_proxy_key: "{{ inventory_dir }}/certs/kube-proxy-key.pem"
+  kube_scheduler_cert: "{{ inventory_dir }}/certs/kube-scheduler.pem"
+  kube_scheduler_key: "{{ inventory_dir }}/certs/kube-scheduler-key.pem"

@@ -1,7 +1,7 @@
 ---
 - name: "Create directory for etcd binaries"
   file:
-    path: /opt/etcd/bin
+    path: "{{ etcd_bin }}"
     state: directory
     owner: root
     group: root
@@ -17,7 +17,7 @@
 - name: "Extract the contents of the tarball"
   unarchive:
     src: /tmp/etcd.tar.gz
-    dest: /opt/etcd/bin/
+    dest: "{{ etcd_bin }}"
     owner: root
     group: root
     mode: 0600
@@ -27,14 +27,14 @@
     remote_src: True
 - name: "Set permissions for etcd"
   file:
-    path: /opt/etcd/bin/etcd
+    path: "{{ etcd_bin }}/etcd"
     state: file
     owner: root
     group: root
     mode: 0700
 - name: "Set permissions for etcdctl"
   file:
-    path: /opt/etcd/bin/etcdctl
+    path: "{{ etcd_bin }}/etcdctl"
     state: file
     owner: root
     group: root
@@ -55,7 +55,7 @@
     insertafter: EOF
 - name: "Create a etcd service file"
   copy:
-    src: etcd/etcd.service
+    src: files/etcd.service
     remote_src: False
     dest: /etc/systemd/system/etcd.service
     owner: root
@@ -68,8 +68,6 @@
     owner: root
     group: root
     mode: 0755
-- name: "Stop the etcd service"
-  command: systemctl stop etcd
 - name: "Create directory for etcd configuration"
   file:
     path: /var/lib/etcd/{{ hostvars[inventory_hostname]['ansible_facts']['hostname'] }}.etcd
@@ -90,4 +88,39 @@
   with_items:
     - /etc/etcd
     - /etc/etcd/ssl
-
+- name: "Create configuration file for etcd"
+  template:
+    src: templates/etcd.conf.yaml.j2
+    dest: /etc/etcd/etcd.conf.yaml
+    owner: root
+    group: root
+    mode: 0600
+- name: "Copy over the CA certificate"
+  copy:
+    src: "{{ certs.ca_cert }}"
+    remote_src: False
+    dest: "{{ etcd_ssl}}/ca.pem"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Copy over the `etcd` member certificate"
+  copy:
+    src: "{{ certs.etcd_cert }}"
+    remote_src: False
+    dest: "{{ etcd_ssl }}/kubernetes.pem"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Copy over the `etcd` member key"
+  copy:
+    src: "{{ certs.etcd_key }}"
+    remote_src: False
+    dest: "{{ etcd_ssl }}/kubernetes-key.pem"
+    owner: root
+    group: root
+    mode: 060
+- name: Enable and start etcd
+  ansible.builtin.service:
+    name: etcd
+    enabled: true
+    state: started

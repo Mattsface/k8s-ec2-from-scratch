@@ -1,2 +1,10 @@
 ---
 # handlers file for controller
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart etcd
+  ansible.builtin.service:
+    name: etcd
+    state: restarted

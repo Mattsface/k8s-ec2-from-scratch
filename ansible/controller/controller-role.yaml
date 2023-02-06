@@ -1,0 +1,10 @@
+---
+- name: Use controller playbook on controller nodes
+  hosts: controllers
+  remote_user: ubuntu
+  become: yes
+  become_user: root
+  
+  roles:
+    - role: controller
+      systems_manager: spahmatthew@gmail.com

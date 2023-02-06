@@ -32,6 +32,7 @@ with open("inventory", "w") as inventory:
         match = re.search(r'^controller-\d', key)
         if match:
             inventory.write(value + '\n')
+
     inventory.write("[workers]\n")
     for key, value in hosts.items():
         match = re.search(r'^worker-\d', key)

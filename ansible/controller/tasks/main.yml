@@ -53,14 +53,6 @@
     state: present
     create: True
     insertafter: EOF
-- name: "Create a etcd service file"
-  copy:
-    src: files/etcd.service
-    remote_src: False
-    dest: /etc/systemd/system/etcd.service
-    owner: root
-    group: root
-    mode: 0644
 - name: "Create a etcd data directory"
   file:
     path: /var/lib/etcd/{{ hostvars[inventory_hostname]['ansible_facts']['hostname'] }}.etcd
@@ -119,8 +111,234 @@
     owner: root
     group: root
     mode: 060
+- name: "Create a etcd service file"
+  copy:
+    src: files/etcd.service
+    remote_src: False
+    dest: /etc/systemd/system/etcd.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Restart etcd
 - name: Enable and start etcd
   ansible.builtin.service:
     name: etcd
     enabled: true
     state: started
+- name: "Create directory for kubernetes libs"
+  file:
+    path: "{{ kubernetes_library }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Create directory for kubernetes configs"
+  file:
+    path: "{{ kubernetes_configs }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Download the kube-apiserver into the /usr/local/bin/ directory"
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-apiserver
+    dest: /usr/local/bin/kube-apiserver
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kube-controller-manager into the /usr/local/bin/ directory"
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-controller-manager
+    dest: /usr/local/bin/kube-controller-manager
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kube-scheduler into the /usr/local/bin/ directory"
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-scheduler
+    dest: /usr/local/bin/kube-scheduler
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kubectl into the /usr/local/bin/ directory"
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl
+    dest: /usr/local/bin/kubectl
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Copy over the CA certificate"
+  copy:
+    src: "{{ certs.ca_cert }}"
+    remote_src: False
+    dest: "{{ kubernetes_library }}/ca.pem"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Copy over the CA key"
+  copy:
+    src: "{{ certs.ca_key }}"
+    remote_src: False
+    dest: "{{ kubernetes_library }}/ca-key.pem"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Copy over the kubernetes certificate"
+  copy:
+    src: "{{ certs.etcd_cert }}"
+    remote_src: False
+    dest: "{{ kubernetes_library }}/kubernetes.pem"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Copy over the kubernetes key"
+  copy:
+    src: "{{ certs.etcd_key }}"
+    remote_src: False
+    dest: "{{ kubernetes_library }}/kubernetes-key.pem"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Copy over the service account certificate"
+  copy:
+    src: "{{ certs.service_account_cert }}"
+    remote_src: False
+    dest: "{{ kubernetes_library }}/service-account.pem"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Copy over the service account key"
+  copy:
+    src: "{{ certs.service_account_key }}"
+    remote_src: False
+    dest: "{{ kubernetes_library }}/service-account-key.pem"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Create a encryption-config file"
+  template:
+    src: encryption-config.yaml.j2
+    dest: "{{ kubernetes_library }}/encryption-config.yaml"
+    owner: root
+    group: root
+    mode: 0644  
+- name: "Create a kube-apiserver service file"
+  template:
+    src: templates/kube-apiserver.service.j2
+    dest: /etc/systemd/system/kube-apiserver.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Restart kube-apiserver
+- name: Enable and start kube-apiserver
+  ansible.builtin.service:
+    name: kube-apiserver
+    enabled: true
+    state: started
+- name: "Copy over the kube-scheduler kubeconfig"
+  copy:
+    src: "{{ source_configs_dir }}/kube-scheduler/kube-scheduler.kubeconfig"
+    remote_src: False
+    dest: "{{ kubernetes_library }}/kube-scheduler.kubeconfig"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Copy over the kube-scheduler yaml"
+  template:
+    src: "templates/kube-schedular.yaml.j2"
+    remote_src: False
+    dest: "{{ kubernetes_configs }}/kube-scheduler.yaml"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Create a kube-scheduler service file"
+  template:
+    src: templates/kube-scheduler.service.j2
+    dest: /etc/systemd/system/kube-scheduler.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Restart kube-scheduler
+- name: Enable and start kube-scheduler
+  ansible.builtin.service:
+    name: kube-scheduler
+    enabled: true
+    state: started
+- name: "Copy over the kube-controller-manager config"
+  copy:
+    src: "{{ source_configs_dir }}/kube-controller/kube-controller-manager.kubeconfig"
+    remote_src: False
+    dest: "{{ kubernetes_library }}/kube-controller-manager.kubeconfig"
+    owner: root
+    group: root
+    mode: 0644
+- name: "Create a kube-controller-manager service file"
+  template:
+    src: templates/kube-controller-manager.service.j2
+    dest: /etc/systemd/system/kube-controller-manager.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Restart kube-controller-manager
+- name: Enable and start kube-controller-manager
+  ansible.builtin.service:
+    name: kube-controller-manager
+    enabled: true
+    state: started
+- name: "Create a hosts file"
+  copy:
+    src: files/hosts
+    remote_src: False
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: 0644
+- name: Copy kube-apiserver-to-kubelet ClusterRole
+  ansible.builtin.copy:
+    src: "files/clusterrole.yaml"
+    dest: "/tmp/clusterrole.yaml"
+    mode: 0600
+  run_once: true
+- name: Copy kube-apiserver-to-kubelet ClusterRoleBinding
+  ansible.builtin.copy:
+    src: "files/clusterrolebinding.yaml"
+    dest: "/tmp/clusterrolebinding.yaml"
+    mode: 0600
+  run_once: true
+- name: "Copy over the admin config"
+  copy:
+    src: "{{ source_configs_dir }}/admin/admin.kubeconfig"
+    remote_src: False
+    dest: "{{ kubernetes_configs }}/admin.kubeconfig"
+    owner: root
+    group: root
+    mode: 0644
+- name: Wait 300 seconds for kube-apiserver port 6443 to become open on the host
+  ansible.builtin.wait_for:
+    port: 6443
+    delay: 5
+    host: 127.0.0.1
+    timeout: 60
+  run_once: true
+- name: Apply kube-apiserver-to-kubelet ClusterRole
+  ansible.builtin.shell: "kubectl apply --kubeconfig {{ kubernetes_configs }}/admin.kubeconfig -f /tmp/clusterrole.yaml"
+  register: kube_apiserver_to_kubelet_cluster_role
+  run_once: true
+  changed_when: false
+- name: Apply kube-apiserver-to-kubelet ClusterRoleBinding
+  ansible.builtin.shell: "kubectl apply --kubeconfig {{ kubernetes_configs }}/admin.kubeconfig -f /tmp/clusterrolebinding.yaml"
+  register: kube_apiserver_to_kubelet_cluster_role_binding
+  run_once: true
+  changed_when: false

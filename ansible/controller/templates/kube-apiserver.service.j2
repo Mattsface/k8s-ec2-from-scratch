@@ -1,0 +1,38 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/kubernetes/kubernetes
+[Service]
+ExecStart=/usr/local/bin/kube-apiserver \
+  --advertise-address="{{ hostvars[inventory_hostname]['ansible_facts']['ens5']['ipv4']['address'] }}" \
+  --allow-privileged="true" \
+  --apiserver-count="3" \
+  --audit-log-maxage="30" \
+  --audit-log-maxbackup="3" \
+  --audit-log-maxsize="100" \
+  --audit-log-path="/var/log/audit.log" \
+  --authorization-mode="Node,RBAC" \
+  --bind-address="0.0.0.0" \
+  --client-ca-file="{{ kubernetes_library}}/ca.pem" \
+  --enable-admission-plugins="NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota" \
+  --etcd-cafile="/var/lib/kubernetes/ca.pem" \
+  --etcd-certfile="{{ kubernetes_library }}/kubernetes.pem" \
+  --etcd-keyfile="{{ kubernetes_library }}/kubernetes-key.pem" \
+  --etcd-servers="https://10.0.1.10:2379,https://10.0.1.11:2379,https://10.0.1.12:2379" \
+  --event-ttl="1h" \
+  --encryption-provider-config="{{ kubernetes_library }}/encryption-config.yaml" \
+  --kubelet-certificate-authority="{{ kubernetes_library}}/ca.pem" \
+  --kubelet-client-certificate="{{ kubernetes_library }}/kubernetes.pem" \
+  --kubelet-client-key="{{ kubernetes_library }}/kubernetes-key.pem" \
+  --runtime-config='api/all=true' \
+  --service-account-key-file="{{ kubernetes_library }}/service-account.pem" \
+  --service-account-signing-key-file="{{ kubernetes_library }}/service-account-key.pem" \
+  --service-account-issuer="{{ kubernetes_public_ip }}" \
+  --service-cluster-ip-range="10.32.0.0/24" \
+  --service-node-port-range="30000-32767" \
+  --tls-cert-file="{{ kubernetes_library}}/kubernetes.pem" \
+  --tls-private-key-file="{{ kubernetes_library }}/kubernetes-key.pem" \
+  --v="2" 
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target

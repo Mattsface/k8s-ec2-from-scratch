@@ -1,2 +1,4 @@
 ---
 # defaults file for worker
+certs:
+  worker: "{{ inventory_dir }}/certs/worker-keys"

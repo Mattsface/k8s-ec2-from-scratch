@@ -1,2 +1,232 @@
 ---
 # tasks file for worker
+- name: "Create custom fact directory"
+  file:
+    path: "/etc/ansible/facts.d"
+    state: "directory"
+- name: "Insert pod_cidr fact file"
+  copy:
+    src: files/pod_cidr.fact
+    dest: /etc/ansible/facts.d/pod_cidr.fact
+    mode: 0755
+- name: "Insert worker_name fact file"
+  copy:
+    src: files/worker_name.fact
+    dest: /etc/ansible/facts.d/worker_name.fact
+    mode: 0755
+- name: "Re-run setup to use custom facts"
+  setup: ~
+- name: Display all variables/facts known for a host
+  ansible.builtin.debug:
+    var: hostvars[inventory_hostname]
+    verbosity: 0
+- name: "Create directory for cni"
+  file:
+    path: "/etc/cni/net.d"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Create directory for cni"
+  file:
+    path: "/tmp/containerd"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Create directory for containerd"
+  file:
+    path: "/etc/containerd"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Create directory for cni binaries"
+  file:
+    path: "/opt/cni/bin"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Create directory for kubelet"
+  file:
+    path: "/var/lib/kubelet"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Create directory for kube-proxy"
+  file:
+    path: "/var/lib/kube-proxy"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Create directory for kubernetes librarys"
+  file:
+    path: "/var/lib/kubernetes"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Create directory for kubernetes binaries"
+  file:
+    path: "/var/run/kubernetes"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+- name: "Download the kubectl into the /usr/local/bin/ directory"
+  get_url:
+    url: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.21.0/crictl-v1.21.0-linux-amd64.tar.gz
+    dest: /tmp/crictl-v1.21.0-linux-amd64.tar.gz
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kubectl into the /usr/local/bin/ directory"
+  get_url:
+    url: https://github.com/opencontainers/runc/releases/download/v1.0.0-rc93/runc.amd64
+    dest: /usr/local/bin/runc
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kubectl into the /usr/local/bin/ directory"
+  get_url:
+    url: https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
+    dest: /tmp/cni-plugins-linux-amd64-v0.9.1.tgz
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kubectl into the /usr/local/bin/ directory"
+  get_url:
+    url: https://github.com/containerd/containerd/releases/download/v1.4.4/containerd-1.4.4-linux-amd64.tar.gz
+    dest: /tmp/containerd-1.4.4-linux-amd64.tar.gz
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kubectl into the /usr/local/bin/ directory"
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl
+    dest: /usr/local/bin/kubectl
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kubectl into the /usr/local/bin/ directory"
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-proxy
+    dest: /usr/local/bin/kube-proxy
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Download the kubectl into the /usr/local/bin/ directory"
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubelet
+    dest: /usr/local/bin/kubelet
+    owner: root
+    group: root
+    mode: 0700
+    force: True
+- name: "Extract the contents of the crictl tarball"
+  unarchive:
+    src: /tmp/crictl-v1.21.0-linux-amd64.tar.gz
+    dest: /usr/local/bin/
+    owner: root
+    group: root
+    mode: 0700
+    decrypt: True
+    remote_src: True
+- name: "Extract the contents of the cni-plugins tarball"
+  unarchive:
+    src: /tmp/cni-plugins-linux-amd64-v0.9.1.tgz
+    dest: /opt/cni/bin/
+    owner: root
+    group: root
+    mode: 0700
+    decrypt: True
+    remote_src: True
+- name: "Extract the contents of the containerd tarball"
+  unarchive:
+    src: /tmp/containerd-1.4.4-linux-amd64.tar.gz
+    dest: /tmp/containerd
+    owner: root
+    group: root
+    mode: 0700
+    decrypt: True
+    remote_src: True
+- name: Copy files for containerd
+  ansible.builtin.copy:
+    src: /tmp/containerd/bin/containerd
+    dest: /bin/containerd
+    mode: '0700'
+    remote_src: True
+- name: Copy files for containerd-shim
+  ansible.builtin.copy:
+    src: /tmp/containerd/bin/containerd-shim
+    dest: /bin/containerd-shim
+    mode: '0700'
+    remote_src: True
+- name: Copy files for containerd-shim-runc-v1
+  ansible.builtin.copy:
+    src: /tmp/containerd/bin/containerd-shim-runc-v1
+    dest: /bin/containerd-shim-runc-v1
+    mode: '0700'
+    remote_src: True
+- name: Copy files for containerd-shim-runc-v2
+  ansible.builtin.copy:
+    src: /tmp/containerd/bin/containerd-shim-runc-v2
+    dest: /bin/containerd-shim-runc-v2
+    mode: '0700'
+    remote_src: True
+- name: Copy files for ctr
+  ansible.builtin.copy:
+    src: /tmp/containerd/bin/ctr
+    dest: /bin/ctr
+    mode: '0700'
+    remote_src: True
+- name: apt-get update
+  ansible.builtin.apt:
+    update_cache: yes
+- name: Install a list of packages
+  ansible.builtin.apt:
+    pkg:
+    - socat
+    - conntrack
+    - ipset
+- name: Disable swap
+  ansible.builtin.shell: swapoff -a
+- name: "Create a 10-bridge-conf file"
+  template:
+    src: templates/10-bridge.conf.j2
+    dest: /etc/cni/net.d/10-bridge.conf
+    owner: root
+    group: root
+    mode: 0644
+- name: "Create a 99-loopback.conf.j2 file"
+  template:
+    src: templates/99-loopback.conf.j2
+    dest: /etc/cni/net.d/99-loopback.conf
+    owner: root
+    group: root
+    mode: 0644
+- name: Copy worker cert for kubelet
+  ansible.builtin.copy:
+    src: "{{ certs.worker}}/{{ hostvars[inventory_hostname]['ansible_local']['worker_name']['worker_name'] }}.pem"
+    dest: /var/lib/kubelet/
+    mode: '0600'
+    remote_src: False
+- name: Copy worker key for kubelet
+  ansible.builtin.copy:
+    src: "{{ certs.worker}}/{{ hostvars[inventory_hostname]['ansible_local']['worker_name']['worker_name'] }}-key.pem"
+    dest: /var/lib/kubelet/
+    mode: '0600'
+    remote_src: False
+
+
+# sudo cp ${WORKER_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
+# sudo cp ca.pem /var/lib/kubernetes/

@@ -1,0 +1,3 @@
+#!/bin/bash
+POD_CIDR=$(curl -s http://169.254.169.254/latest/user-data/ | tr "|" "\n" | grep "^pod-cidr" | cut -d"=" -f2)
+echo "{\"pod_cidr\" : \"${POD_CIDR}\"}"

@@ -1,2 +1,24 @@
 ---
 # handlers file for worker
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart containerd
+  ansible.builtin.service:
+    name: containerd
+    state: restarted
+
+- name: Restart kubelet
+  ansible.builtin.service:
+    name: kubelet
+    state: restarted
+
+- name: Restart kube-proxy
+  ansible.builtin.service:
+    name: kube-proxy
+    state: restarted
+
+
+
+  

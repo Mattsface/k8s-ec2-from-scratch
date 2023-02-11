@@ -2,3 +2,8 @@
 # defaults file for worker
 certs:
   worker: "{{ inventory_dir }}/certs/worker-keys"
+  ca: "{{ inventory_dir }}/certs/ca-keys"
+
+configs:
+  worker: "{{ inventory_dir }}/configs/workers"
+  kubeproxy: "{{ inventory_dir }}/configs/kube-proxy"

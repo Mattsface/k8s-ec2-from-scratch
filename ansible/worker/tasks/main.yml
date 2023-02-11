@@ -76,6 +76,41 @@
     owner: root
     group: root
     mode: 0700
+- name: Copy worker cert for kubelet
+  ansible.builtin.copy:
+    src: "{{ certs.worker}}/{{ hostvars[inventory_hostname]['ansible_local']['worker_name']['worker_name'] }}.pem"
+    dest: /var/lib/kubelet/
+    mode: '0600'
+    remote_src: False
+- name: Copy worker key for kubelet
+  ansible.builtin.copy:
+    src: "{{ certs.worker}}/{{ hostvars[inventory_hostname]['ansible_local']['worker_name']['worker_name'] }}-key.pem"
+    dest: /var/lib/kubelet/
+    mode: '0600'
+    remote_src: False
+- name: Copy worker key for kubelet
+  ansible.builtin.copy:
+    src: "{{ certs.ca }}/ca.pem"
+    dest: /var/lib/kubernetes/
+    mode: '0600'
+    remote_src: False
+- name: Copy worker key for kubelet
+  ansible.builtin.copy:
+    src: "{{ certs.ca }}/ca.pem"
+    dest: /var/lib/kubernetes/
+    mode: '0600'
+    remote_src: False
+- name: apt-get update
+  ansible.builtin.apt:
+    update_cache: yes
+- name: Install a list of packages
+  ansible.builtin.apt:
+    pkg:
+    - socat
+    - conntrack
+    - ipset
+- name: Disable swap
+  ansible.builtin.shell: swapoff -a
 - name: "Download the kubectl into the /usr/local/bin/ directory"
   get_url:
     url: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.21.0/crictl-v1.21.0-linux-amd64.tar.gz
@@ -189,17 +224,6 @@
     dest: /bin/ctr
     mode: '0700'
     remote_src: True
-- name: apt-get update
-  ansible.builtin.apt:
-    update_cache: yes
-- name: Install a list of packages
-  ansible.builtin.apt:
-    pkg:
-    - socat
-    - conntrack
-    - ipset
-- name: Disable swap
-  ansible.builtin.shell: swapoff -a
 - name: "Create a 10-bridge-conf file"
   template:
     src: templates/10-bridge.conf.j2
@@ -214,19 +238,83 @@
     owner: root
     group: root
     mode: 0644
-- name: Copy worker cert for kubelet
+- name: Copy files for containerd config.toml
   ansible.builtin.copy:
-    src: "{{ certs.worker}}/{{ hostvars[inventory_hostname]['ansible_local']['worker_name']['worker_name'] }}.pem"
-    dest: /var/lib/kubelet/
+    src: files/config.toml
+    dest: /etc/containerd/config.toml
+    mode: '0644'
+    remote_src: False
+- name: "Create a containerd.service file"
+  template:
+    src: templates/containerd.service.j2
+    dest: /etc/systemd/system/containerd.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Restart containerd
+- name: Copy worker kubelet kubeconfig
+  ansible.builtin.copy:
+    src: "{{ configs.worker}}/{{ hostvars[inventory_hostname]['ansible_local']['worker_name']['worker_name'] }}.kubeconfig"
+    dest: /var/lib/kubelet/kubeconfig
     mode: '0600'
     remote_src: False
-- name: Copy worker key for kubelet
+- name: "Create a kubelet-config.yaml.j2 file"
+  template:
+    src: templates/kubelet-config.yaml.j2
+    dest: /var/lib/kubelet/kubelet-config.yaml
+    owner: root
+    group: root
+    mode: 0644
+- name: "Create a kubelet.service.j2 file"
+  template:
+    src: templates/kubelet.service.j2
+    dest: /etc/systemd/system/kubelet.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Restart kubelet
+- name: Copy worker kube proxy
   ansible.builtin.copy:
-    src: "{{ certs.worker}}/{{ hostvars[inventory_hostname]['ansible_local']['worker_name']['worker_name'] }}-key.pem"
-    dest: /var/lib/kubelet/
+    src: "{{ configs.kubeproxy }}/kube-proxy.kubeconfig"
+    dest: /var/lib/kube-proxy/kubeconfig
     mode: '0600'
     remote_src: False
-
-
-# sudo cp ${WORKER_NAME}.kubeconfig /var/lib/kubelet/kubeconfig
-# sudo cp ca.pem /var/lib/kubernetes/
+- name: "Create a kube-proxy-config.yaml file"
+  template:
+    src: templates/kube-proxy-config.yaml.j2
+    dest: /var/lib/kube-proxy/kube-proxy-config.yaml
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Restart kube-proxy
+- name: "Create a kube-proxy.service file"
+  template:
+    src: templates/kube-proxy.service.j2
+    dest: /etc/systemd/system/kube-proxy.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload systemd
+    - Restart kube-proxy
+- name: Enable and start containerd
+  ansible.builtin.service:
+    name: containerd
+    enabled: true
+    state: started
+- name: Enable and start kube-proxy
+  ansible.builtin.service:
+    name: kube-proxy
+    enabled: true
+    state: started
+- name: Enable and start kubelet
+  ansible.builtin.service:
+    name: kubelet
+    enabled: true
+    state: started

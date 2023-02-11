@@ -16,7 +16,8 @@ certs:
   kube_proxy_key: "{{ inventory_dir }}/certs/kube-keys/kube-proxy-key.pem"
   kube_scheduler_cert: "{{ inventory_dir }}/certs/kube-keys/kube-scheduler.pem"
   kube_scheduler_key: "{{ inventory_dir }}/certs/kube-keys/kube-scheduler-key.pem"
-
+configs:
+  admin: "{{ inventory_dir }}/configs/admin"
 kubernetes_library: /var/lib/kubernetes
 kubernetes_configs: /etc/kubernetes/config
 
